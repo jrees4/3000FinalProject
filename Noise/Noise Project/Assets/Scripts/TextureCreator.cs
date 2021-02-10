@@ -67,7 +67,7 @@ public class TextureCreator : MonoBehaviour
             for (int x = 0; x < resolution; x++){ //for
                 Vector3 point = Vector3.Lerp(point0, point1, (x + 0.5f) * stepSize); // point between left and right.
                 //Debug.Log("Rotation: " + y + "version:  " + x + "Point : -- " + point);
-                texture.SetPixel(x , y , Color.white * Noise.Value(point, frequency));  // Sets pixel colour for each point
+                texture.SetPixel(x , y , Color.white * Noise.Value2D(point, frequency));  // Sets pixel colour for each point
                 //old white * random.value
                 //OLD: new Color(point.x, point.y, point.z)  --   OLD OLD: ((x + 0.5f) * stepSize % 0.1f, (y + 0.5f) * stepSize % 0.1f, 0f) * 10f )
             }

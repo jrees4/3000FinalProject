@@ -329,7 +329,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   resolution: 128
-  frequency: 32
+  frequency: 256
 --- !u!64 &1172725531
 MeshCollider:
   m_ObjectHideFlags: 0
