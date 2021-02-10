@@ -289,8 +289,8 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 963194225}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1, z: -10}
+  m_LocalRotation: {x: -0.06775756, y: -0.00090100075, z: 0.00006113256, w: -0.9977014}
+  m_LocalPosition: {x: 0.07895643, y: 0.22048688, z: -1.4024563}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -329,6 +329,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   resolution: 128
+  frequency: 32
 --- !u!64 &1172725531
 MeshCollider:
   m_ObjectHideFlags: 0
