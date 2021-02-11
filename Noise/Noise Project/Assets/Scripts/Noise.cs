@@ -4,6 +4,11 @@ using UnityEngine;
 
 public delegate float NoiseMethod (Vector3 point, float frequency); //delegate for noise methods
 
+public enum NoiseMethodType {
+	Value,
+	Perlin
+}
+
 public class Noise : MonoBehaviour
 {
     // Start is called before the first frame update
@@ -56,7 +61,10 @@ public class Noise : MonoBehaviour
 
     private const int hashMask = 255;
 
-    // a values = a D  (dimension)
+	//maths for a divide by √1/2
+	private static float sqr2 = Mathf.Sqrt(2f);
+
+    // VALUE NOISE
     public static float Value1D (Vector3 point, float frequency) {  //give 3d space point, return random value.
         point *= frequency ;
         int i0 = Mathf.FloorToInt(point.x); //store cord. //OLD: discard fractional. cast int.
@@ -144,6 +152,183 @@ public class Noise : MonoBehaviour
 		Value2D,
 		Value3D
 	};
+
+	//PERLINE NOISE
+	public static NoiseMethod[] perlinMethods = {
+		Perlin1D,
+		Perlin2D,
+		Perlin3D
+	};
+
+	public static NoiseMethod[][] noiseMethods = {
+		valueMethods,
+		perlinMethods
+	};
+
+	public static float Perlin1D (Vector3 point, float frequency) {  
+        point *= frequency ;
+        int i0 = Mathf.FloorToInt(point.x); //store point as x coordinate
+		
+		//the distance from point to point FOR interpolation //gradient
+		float t0 = point.x - i0; 
+		float t1 = t0 - 1f;
+        i0 &= hashMask; //limit
+		int i1 = i0 + 1; 
+
+		//convert to gradient functions so length isnt an isssue
+		float g0 = gradients1D[hash[i0] & gradientsMask1D];
+		float g1 = gradients1D[hash[i1] & gradientsMask1D];
+
+		//values at current point
+		float v0 = g0 * t0;
+		float v1 = g1 * t1;
+
+
+		float t = Smooth(t0);
+		return Mathf.Lerp(v0, v1, t) * 2f; //lerp for space between //double for darker darks and whiter whites
+	}
+
+    public static float Perlin2D (Vector3 point, float frequency) {
+		point *= frequency;
+		//cords
+		int ix0 = Mathf.FloorToInt(point.x); 
+        int iy0 = Mathf.FloorToInt(point.y); 
+		//interpolation 
+		float tx0 = point.x - ix0; 
+		float ty0 = point.y - iy0; 
+		float tx1 = tx0 - 1f;
+		float ty1 = ty0 - 1f;
+		//
+		ix0 &= hashMask;
+        iy0 &= hashMask;
+		int ix1 = ix0 + 1;
+		int iy1 = iy0 + 1;
+
+		//hashing
+		int h0 = hash[ix0];
+		int h1 = hash[ix1];
+		Vector2 g00 = gradients2D[hash[h0 + iy0] & gradientsMask2D];
+		Vector2 g10 = gradients2D[hash[h1 + iy0] & gradientsMask2D];
+		Vector2 g01 = gradients2D[hash[h0 + iy1] & gradientsMask2D];
+		Vector2 g11 = gradients2D[hash[h1 + iy1] & gradientsMask2D];
+
+		//find angles
+		float v00 = Dot(g00, tx0, ty0);
+		float v10 = Dot(g10, tx1, ty0);
+		float v01 = Dot(g01, tx0, ty1);
+		float v11 = Dot(g11, tx1, ty1);
+
+		//smoothing
+		float tx = Smooth(tx0);
+		float ty = Smooth(ty0);
+		
+		return Mathf.Lerp( //(start, end, distance)
+			Mathf.Lerp(v00, v10, tx),
+			Mathf.Lerp(v01, v11, tx),
+			ty) * sqr2;  //square root of 2 is basically 1/2
+	}
+
+	public static float Perlin3D (Vector3 point, float frequency) {
+		point *= frequency;
+		//cords
+		int ix0 = Mathf.FloorToInt(point.x);
+		int iy0 = Mathf.FloorToInt(point.y);
+		int iz0 = Mathf.FloorToInt(point.z);
+		//points between points
+		float tx0 = point.x - ix0;
+		float ty0 = point.y - iy0;
+		float tz0 = point.z - iz0;
+		float tx1 = tx0 - 1f;
+		float ty1 = ty0 - 1f;
+		float tz1 = tz0 - 1f;
+		ix0 &= hashMask; //this has to be done after that to apply properly
+		iy0 &= hashMask;
+		iz0 &= hashMask;
+		int ix1 = ix0 + 1;
+		int iy1 = iy0 + 1;
+		int iz1 = iz0 + 1;
+		//hashing
+		int h0 = hash[ix0];
+		int h1 = hash[ix1];
+		int h00 = hash[h0 + iy0];
+		int h10 = hash[h1 + iy0];
+		int h01 = hash[h0 + iy1];
+		int h11 = hash[h1 + iy1];
+		Vector3 g000 = gradients3D[hash[h00 + iz0] & gradientsMask3D];
+		Vector3 g100 = gradients3D[hash[h10 + iz0] & gradientsMask3D];
+		Vector3 g010 = gradients3D[hash[h01 + iz0] & gradientsMask3D];
+		Vector3 g110 = gradients3D[hash[h11 + iz0] & gradientsMask3D];
+		Vector3 g001 = gradients3D[hash[h00 + iz1] & gradientsMask3D];
+		Vector3 g101 = gradients3D[hash[h10 + iz1] & gradientsMask3D];
+		Vector3 g011 = gradients3D[hash[h01 + iz1] & gradientsMask3D];
+		Vector3 g111 = gradients3D[hash[h11 + iz1] & gradientsMask3D];
+		//maths
+		float v000 = Dot(g000, tx0, ty0, tz0);
+		float v100 = Dot(g100, tx1, ty0, tz0);
+		float v010 = Dot(g010, tx0, ty1, tz0);
+		float v110 = Dot(g110, tx1, ty1, tz0);
+		float v001 = Dot(g001, tx0, ty0, tz1);
+		float v101 = Dot(g101, tx1, ty0, tz1);
+		float v011 = Dot(g011, tx0, ty1, tz1);
+		float v111 = Dot(g111, tx1, ty1, tz1);
+		float tx = Smooth(tx0);
+		float ty = Smooth(ty0);
+		float tz = Smooth(tz0);
+
+		return Mathf.Lerp(
+			Mathf.Lerp(Mathf.Lerp(v000, v100, tx), Mathf.Lerp(v010, v110, tx), ty),
+			Mathf.Lerp(Mathf.Lerp(v001, v101, tx), Mathf.Lerp(v011, v111, tx), ty),
+			tz);
+	}
+
+	//--- GRADIENT METHODS---
+	private static float[] gradients1D = { //two possible directions/movement  odds and evens
+		1f, -1f
+	};
+	private const int gradientsMask1D = 1;
+
+	private static Vector2[] gradients2D = { //4 directions. up down left right //OLD diagonal horizontal and vertical alignment
+		//new normalized diagonal
+		new Vector2( 1f, 0f),
+		new Vector2(-1f, 0f),
+		new Vector2( 0f, 1f),
+		new Vector2( 0f,-1f),
+		new Vector2( 1f, 1f).normalized,
+		new Vector2(-1f, 1f).normalized,
+		new Vector2( 1f,-1f).normalized,
+		new Vector2(-1f,-1f).normalized
+	};
+	private const int gradientsMask2D = 3;
+
+	private static Vector3[] gradients3D = {//12 pointing to cube center
+		new Vector3( 1f, 1f, 0f),
+		new Vector3(-1f, 1f, 0f),
+		new Vector3( 1f,-1f, 0f),
+		new Vector3(-1f,-1f, 0f),
+		new Vector3( 1f, 0f, 1f),
+		new Vector3(-1f, 0f, 1f),
+		new Vector3( 1f, 0f,-1f),
+		new Vector3(-1f, 0f,-1f),
+		new Vector3( 0f, 1f, 1f),
+		new Vector3( 0f,-1f, 1f),
+		new Vector3( 0f, 1f,-1f),
+		new Vector3( 0f,-1f,-1f),
+		
+		new Vector3( 1f, 1f, 0f),
+		new Vector3(-1f, 1f, 0f),
+		new Vector3( 0f,-1f, 1f),
+		new Vector3( 0f,-1f,-1f)
+	};
+	private const int gradientsMask3D = 15;
+
+	// Math functions
+	private static float Dot (Vector2 g, float x, float y) { //dot / scalar product.  operation between two vectors.  more maths. tldr: angle between them.  for 2d
+		return g.x * x + g.y * y;
+	}
+
+	private static float Dot (Vector3 g, float x, float y, float z) { //for 3d
+		return g.x * x + g.y * y + g.z * z;
+	}
 
 	private static float Smooth (float t) {
 		return t * t * t * (t * (t * 6f - 15f) + 10f); //0s on each end.   Maths.

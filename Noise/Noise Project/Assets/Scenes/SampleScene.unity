@@ -328,9 +328,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7be577bb1b813e241bb23d172b8f65e9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  resolution: 128
+  resolution: 256
+  frequency: 32
   dimensions: 3
-  frequency: 256
+  type: 0
 --- !u!64 &1172725531
 MeshCollider:
   m_ObjectHideFlags: 0
