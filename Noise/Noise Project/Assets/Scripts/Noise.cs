@@ -59,29 +59,84 @@ public class Noise : MonoBehaviour
     // a values = a D  (dimension)
     public static float Value1D (Vector3 point, float frequency) {  //give 3d space point, return random value.
         point *= frequency ;
-        int i = Mathf.FloorToInt(point.x); //OLD discard fractional. cast int.
-        i &= hashMask; //limit i to array index
-		return hash[i] * (1f/ hashMask); //scaled result from hash.    //i & 2; //bitwise AND operator. logic: 101 - 010 = 0      || OLD return i % 2  when odd?, only right side shows.
+        int i0 = Mathf.FloorToInt(point.x); //store cord. //OLD: discard fractional. cast int.
+		float t = point.x - i0; //the distance from point to point FOR interpolation //value noise
+        i0 &= hashMask; //limit i to array index
+		int i1 = i0 + 1; //point next to the poit we want
+
+		int h0 = hash[i0];
+		int h1 = hash[i1];
+		t = Smooth(t); //smooth those blurred lines
+		return Mathf.Lerp(h0, h1, t) * (1f/ hashMask); // use lerp to find point between. // hash[i]  //scaled result from hash.    //i & 2; //bitwise AND operator. logic: 101 - 010 = 0      || OLD return i % 2  when odd?, only right side shows.
 	}
 
     public static float Value2D (Vector3 point, float frequency) {
 		point *= frequency;
-		int ix = Mathf.FloorToInt(point.x); //x cord
-        int iy = Mathf.FloorToInt(point.y); // y cord
-		ix &= hashMask;
-        iy &= hashMask;
-		return hash[(hash[ix] + iy) & hashMask] * (1f / hashMask); // hash both cords. convert max range
+		int ix0 = Mathf.FloorToInt(point.x); //x cord
+        int iy0 = Mathf.FloorToInt(point.y); // y cord
+		float tx = point.x - ix0; //interpolation points
+		float ty = point.y - iy0; // ( the distance between points). this isnt a set value cause transformable object scaling
+		ix0 &= hashMask;
+        iy0 &= hashMask;
+		int ix1 = ix0 + 1;
+		int iy1 = iy0 + 1;
+
+		//pre hash
+		int h0 = hash[ix0];
+		int h1 = hash[ix1];
+		int h00 = hash[h0 + iy0]; 
+		int h10 = hash[h1 + iy0];
+		int h01 = hash[h0 + iy1];
+		int h11 = hash[h1 + iy1];
+
+		tx = Smooth(tx); //smoothing~
+		ty = Smooth(ty);
+		
+		return Mathf.Lerp(
+			Mathf.Lerp(h00, h10, tx),
+			Mathf.Lerp(h01, h11, tx),
+			ty) * (1f / hashMask); // hash[(hash[ix] + iy) & hashMask] // hash both cords. convert max range
 	}
 
 	public static float Value3D (Vector3 point, float frequency) {
 		point *= frequency;
-		int ix = Mathf.FloorToInt(point.x); //x cord
-        int iy = Mathf.FloorToInt(point.y); // y cord
-		int iz =Mathf.FloorToInt(point.z); // z cord
-		ix &= hashMask;
-        iy &= hashMask;
-		iz &= hashMask;
-		return hash[(hash[(hash[ix] + iy) & hashMask] + iz) & hashMask] * (1f / hashMask); // hash all cords. convert max range
+		int ix0 = Mathf.FloorToInt(point.x); //x cord
+        int iy0 = Mathf.FloorToInt(point.y); // y cord
+		int iz0 =Mathf.FloorToInt(point.z); // z cord
+		float tx = point.x - ix0;
+		float ty = point.y - iy0;
+		float tz = point.z - iz0;
+		ix0 &= hashMask;
+        iy0 &= hashMask;
+		iz0 &= hashMask;
+		int ix1 = ix0 + 1;
+		int iy1 = iy0 + 1;
+		int iz1 = iz0 + 1;
+
+		//pre baked hashbrowns. more dimensions scale ridiculously
+		int h0 = hash[ix0];
+		int h1 = hash[ix1];
+		int h00 = hash[h0 + iy0];
+		int h10 = hash[h1 + iy0];
+		int h01 = hash[h0 + iy1];
+		int h11 = hash[h1 + iy1];
+		int h000 = hash[h00 + iz0];
+		int h100 = hash[h10 + iz0];
+		int h010 = hash[h01 + iz0];
+		int h110 = hash[h11 + iz0];
+		int h001 = hash[h00 + iz1];
+		int h101 = hash[h10 + iz1];
+		int h011 = hash[h01 + iz1];
+		int h111 = hash[h11 + iz1];
+
+		//smoothing distance
+		tx = Smooth(tx);
+		ty = Smooth(ty);
+		tz = Smooth(tz);
+		return  Mathf.Lerp(
+			Mathf.Lerp(Mathf.Lerp(h000, h100, tx), Mathf.Lerp(h010, h110, tx), ty),
+			Mathf.Lerp(Mathf.Lerp(h001, h101, tx), Mathf.Lerp(h011, h111, tx), ty),
+			tz) * (1f / hashMask); //NO HASHING NEEDED. Already done//hash[(hash[(hash[ix] + iy) & hashMask] + iz) & hashMask] // hash all cords. convert max range  
 	}
 
 	public static NoiseMethod[] valueMethods = {  //contain reference to valuemethods
@@ -89,4 +144,8 @@ public class Noise : MonoBehaviour
 		Value2D,
 		Value3D
 	};
+
+	private static float Smooth (float t) {
+		return t * t * t * (t * (t * 6f - 15f) + 10f); //0s on each end.   Maths.
+	}
 }
