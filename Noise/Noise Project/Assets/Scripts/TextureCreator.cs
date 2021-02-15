@@ -8,12 +8,23 @@ public class TextureCreator : MonoBehaviour
     public int resolution = 256;  //size. 16 * 16
 
     public float frequency = 1f; //for Noise.cs
+
+    [Range (1,8)]
+    public int octaves = 1; //samples
     
     [Range(1, 3)]
 	public int dimensions = 3; // 1D, 2D, 3D
 
-    public NoiseMethodType type;
+    [Range (1f, 4f)]
+    public float lacunarity =2f; // frequency changes
 
+    [Range (0f, 1f)]
+    public float persistence = 0.5f; //amplitude or gain.
+
+    public NoiseMethodType type; //noise type
+
+    public Gradient colouring;  //colours
+    
     //vars
     private Texture2D texture;
     
@@ -74,17 +85,20 @@ public class TextureCreator : MonoBehaviour
             //Debug.Log("Rotation: " + y + "Point 1: -- " + point1);
             for (int x = 0; x < resolution; x++){ //for
                 Vector3 point = Vector3.Lerp(point0, point1, (x + 0.5f) * stepSize); // point between left and right.
-                float sample = method(point, frequency);
+                // OLD float sample = method(point, frequency);
+                float sample = Noise.Sum(method, point, frequency, octaves, lacunarity, persistence); //pass selected method into the sum method in the noise class. + the number of samples needed (octaves)
 				if (type != NoiseMethodType.Value) { //at this point, maybe theres a way to do this without this many loops
 					sample = sample * 0.5f + 0.5f;
 				}
 
                 //Debug.Log("Rotation: " + y + "version:  " + x + "Point : -- " + point);
-                texture.SetPixel(x , y , Color.white * sample);  //OLD: Sets pixel colour for each point using noise.method   dimension.
+                texture.SetPixel(x , y , colouring.Evaluate(sample));  //OLD: Sets pixel colour for each point using noise.method   dimension.
                 //old white * random.value
                 //OLD: new Color(point.x, point.y, point.z)  --   OLD OLD: ((x + 0.5f) * stepSize % 0.1f, (y + 0.5f) * stepSize % 0.1f, 0f) * 10f )
             }
         }
         texture.Apply();
     }
+
+    
 }

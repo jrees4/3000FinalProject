@@ -64,12 +64,13 @@ public class Noise : MonoBehaviour
 	//maths for a divide by √1/2
 	private static float sqr2 = Mathf.Sqrt(2f);
 
+	// --------------  BIG NOISE-TYPE METHODS -------------
     // VALUE NOISE
     public static float Value1D (Vector3 point, float frequency) {  //give 3d space point, return random value.
         point *= frequency ;
         int i0 = Mathf.FloorToInt(point.x); //store cord. //OLD: discard fractional. cast int.
 		float t = point.x - i0; //the distance from point to point FOR interpolation //value noise
-        i0 &= hashMask; //limit i to array index
+        i0 &= hashMask; //limit i to array index using least significant bits.
 		int i1 = i0 + 1; //point next to the poit we want
 
 		int h0 = hash[i0];
@@ -147,6 +148,7 @@ public class Noise : MonoBehaviour
 			tz) * (1f / hashMask); //NO HASHING NEEDED. Already done//hash[(hash[(hash[ix] + iy) & hashMask] + iz) & hashMask] // hash all cords. convert max range  
 	}
 
+	//  noise methods   ---
 	public static NoiseMethod[] valueMethods = {  //contain reference to valuemethods
 		Value1D,
 		Value2D,
@@ -165,6 +167,7 @@ public class Noise : MonoBehaviour
 		perlinMethods
 	};
 
+	
 	public static float Perlin1D (Vector3 point, float frequency) {  
         point *= frequency ;
         int i0 = Mathf.FloorToInt(point.x); //store point as x coordinate
@@ -332,5 +335,20 @@ public class Noise : MonoBehaviour
 
 	private static float Smooth (float t) {
 		return t * t * t * (t * (t * 6f - 15f) + 10f); //0s on each end.   Maths.
+	}
+
+	//fractal noise combination.
+	public static float Sum (NoiseMethod method, Vector3 point, float frequency, int octaves, float lacunarity, float persistence){  // oldd combine samples at different frequencys by doubling points and frequencys and calling the method twice. then divide by 1.5
+		float sum = method(point, frequency);
+		float amplitude = 1f;
+		float range = 1f;
+		
+		for	(int o = 1; o < octaves; o++) { //for each octave
+			frequency *= lacunarity;
+			amplitude *= persistence;
+			range += amplitude;
+			sum += method(point, frequency) * amplitude;
+		}
+		return sum / range;
 	}
 }
