@@ -24,6 +24,7 @@
         struct Input
         {
             float2 uv_MainTex;
+            half4 color : COLOR;
         };
 
         half _Glossiness;
@@ -37,15 +38,15 @@
             // put more per-instance properties here
         UNITY_INSTANCING_BUFFER_END(Props)
 
-        void surf (Input IN, inout SurfaceOutputStandard o)
+        void surf (Input IN, inout SurfaceOutputStandard o) //material properties are set here.
         {
             // Albedo comes from a texture tinted by color
             fixed4 c = tex2D (_MainTex, IN.uv_MainTex) * _Color;
-            o.Albedo = c.rgb;
+            o.Albedo = c.rgb * IN.color.rgb;
             // Metallic and smoothness come from slider variables
             o.Metallic = _Metallic;
             o.Smoothness = _Glossiness;
-            o.Alpha = c.a;
+            o.Alpha = c.a * IN.color.a;
         }
         ENDCG
     }
