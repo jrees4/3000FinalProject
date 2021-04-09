@@ -19,10 +19,21 @@ Material:
   disabledShaderPasses: []
   m_SavedProperties:
     serializedVersion: 3
-    m_TexEnvs: []
+    m_TexEnvs:
+    - _MainNormal:
+        m_Texture: {fileID: 2800000, guid: d87a5ba09cb0c814b9ebdf69d7d5e47d, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _SecondaryNormal:
+        m_Texture: {fileID: 2800000, guid: e3f0a047bd4ad6e4cafa14f5e8985143, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     m_Floats:
     - _Depth: 1
-    - _Strength: 0.7
+    - _Displacement: 0.75
+    - _Normal_Strength: 0.26
+    - _Smoothness: 0.66
+    - _Strength: 0.24
     m_Colors:
-    - _DeepColour: {r: 0, g: 0.720523, b: 0.8313726, a: 0.8117647}
-    - _ShallowColour: {r: 0.46999985, g: 0.97349995, b: 1, a: 0.5176471}
+    - _DeepColour: {r: 0.062611245, g: 0.44912475, b: 0.6320754, a: 0.8117647}
+    - _ShallowColour: {r: 0.31185475, g: 0.87487024, b: 0.9056604, a: 0.5176471}
