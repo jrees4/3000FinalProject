@@ -15,6 +15,7 @@ public class PauseMenu : MonoBehaviour
         if ( Input.GetKeyDown(KeyCode.Escape)){
             if ( GameIsPause){
                 Resume();
+                 Cursor.visible = false;
             }else
             {
                 Pause();

@@ -17,6 +17,8 @@ public class SurfaceCreator : MonoBehaviour
 	private Vector3[] normals;
 	private Color[] colors;
 
+    
+
 
     [Range(1, 200)]
 	public int resolution = 10;
@@ -39,6 +41,9 @@ public class SurfaceCreator : MonoBehaviour
 	
 	public Gradient coloring;
 
+    //public MeshCollider collider;
+    public GameObject SurfaceThing;
+
     
 
     private void OnEnable() { //make sure mesh exsists or make a new one
@@ -46,6 +51,30 @@ public class SurfaceCreator : MonoBehaviour
             mesh = new Mesh();
             mesh.name = "Surface Mesh";
             GetComponent<MeshFilter>().mesh = mesh;
+
+            //mesh collider stuff that works in a weird way.
+            DestroyImmediate(SurfaceThing.GetComponent<MeshCollider>());
+            Debug.Log("Deleted.");
+            SurfaceThing.AddComponent<MeshCollider>().sharedMesh = mesh;
+
+            /*
+              Doesnt work. HAD TO BE DONE IN REFRESH.  AND IT HAS TO BE DELETED THEN REMADE. unity reports it as a bug.
+            DestroyImmediate(SurfaceThing.GetComponent<MeshCollider>());
+            SurfaceThing.AddComponent<MeshCollider>().sharedMesh = mesh;
+            Debug.Log("Deleted.");
+
+            var collider = SurfaceThing.GetComponent<MeshCollider>();
+            collider.enabled = false;
+            collider.enabled = true;    
+
+             var mc = SurfaceThing.GetComponent<MeshCollider>();
+             if(mc==null)
+                 mc = (MeshCollider) SurfaceThing.AddComponent (typeof(MeshCollider));
+             else
+             {
+                 mc.sharedMesh = null;
+                 mc.sharedMesh = mesh;
+             }*/
         }
         Refresh();
     }
@@ -83,6 +112,10 @@ public class SurfaceCreator : MonoBehaviour
         mesh.vertices = vertices;
         mesh.colors = colors;
 
+        //mesh collider stuff that works in a weird way.
+            DestroyImmediate(SurfaceThing.GetComponent<MeshCollider>());
+            Debug.Log("Deleted.");
+            SurfaceThing.AddComponent<MeshCollider>().sharedMesh = mesh;
         
     }
 
@@ -138,5 +171,9 @@ public class SurfaceCreator : MonoBehaviour
         mesh.colors = colors; //vertext colours have to be used by a shader
         //TRIANGLES/QUADS using the lines
 		mesh.triangles = triangles;
+
+        //collider.sharedMesh = mesh;
+        
+
     }
 }
