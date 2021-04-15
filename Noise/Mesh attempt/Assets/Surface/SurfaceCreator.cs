@@ -9,9 +9,13 @@ public class SurfaceCreator : MonoBehaviour
     //vars 
     private Mesh mesh;
     private int currentResolution;
+    
+    
     //for transforming.
     public Vector3 offset; 
     public Vector3 rotation;
+
+
     //(mostly for create grid function)
     private Vector3[] vertices;
 	private Vector3[] normals;
@@ -44,6 +48,7 @@ public class SurfaceCreator : MonoBehaviour
     //public MeshCollider collider;
     public GameObject SurfaceThing;
 
+    private int  test = 5;
     
 
     private void OnEnable() { //make sure mesh exsists or make a new one
@@ -54,8 +59,14 @@ public class SurfaceCreator : MonoBehaviour
 
             //mesh collider stuff that works in a weird way.
             DestroyImmediate(SurfaceThing.GetComponent<MeshCollider>());
-            Debug.Log("Deleted.");
+            //Debug.Log("Deleted.");
             SurfaceThing.AddComponent<MeshCollider>().sharedMesh = mesh;
+
+            //Random.Seed = 1;
+
+	        
+
+	        //Debug.Log(" TEST: " + test);
 
             /*
               Doesnt work. HAD TO BE DONE IN REFRESH.  AND IT HAS TO BE DELETED THEN REMADE. unity reports it as a bug.
@@ -93,14 +104,15 @@ public class SurfaceCreator : MonoBehaviour
 		Vector3 point01 = q * new Vector3(-0.5f, 0.5f)+ offset;
 		Vector3 point11 = q * new Vector3( 0.5f, 0.5f)+ offset;
 
-        NoiseMethod method = Noise.noiseMethods[(int)type][dimensions - 1]; //call method in noise class
+        NoiseMethod method = Noise.noiseMethods[(int)type][dimensions - 1]; //call method in noise class  //IMPORTANT
+
         float stepSize = 1f / resolution;
         for (int v = 0, y = 0; y <= resolution; y++) {
             Vector3 point0 = Vector3.Lerp(point00, point01, y * stepSize);
             Vector3 point1 = Vector3.Lerp(point10, point11, y * stepSize);
             for (int x = 0; x <= resolution; x++, v++) {
                 Vector3 point = Vector3.Lerp(point0, point1, x * stepSize);
-                float sample = Noise.Sum(method, point, frequency, octaves, lacunarity, persistence);
+                float sample = Noise.Sum(method, point, frequency, octaves, lacunarity, persistence);   //Put stuff into noise method.
                 /* if (type != NoiseMethodType.Value) {
                     sample = sample * 0.5f + 0.5f;
                 } */
